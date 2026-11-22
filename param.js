@@ -230,6 +230,21 @@ async function CreeLienOlySeeAdmin()
   return (lLien);
 }
 
+//--------------------------------------------------------------------------------------------------
+// Création d'un ID Admin
+//--------------------------------------------------------------------------------------------------
+async function CreeIDOlySeeAdmin()
+{
+  let lID = "";
+  const lTxtID = pid('TxtID').value;
+  if (lTxtID != "")
+  {
+    const lRetDecode = await decodeSupabaseConfig(lTxtID);
+    lID = await encodeSupabaseConfig(lRetDecode.url, lRetDecode.key, lRetDecode.usr, true);
+  }
+  return (lID);
+}
+
 //-------------------------------------------------------
 // Test de la connexion à la base de données
 //-------------------------------------------------------
@@ -306,10 +321,13 @@ async function ButTesterIDClick()
 async function ButOuvrirOlySeeDepuisParamClick()
 {
   BoutonEtat('ButOuvrirOlySeeDepuisParam', 'actif');
-  const lLien = await CreeLienOlySeeAdmin();
-  window.open("see.html", '_blank');
-  await sleep(300);
-  BoutonEtat('ButOuvrirOlySeeDepuisParam', 'inactif'  );
+  const lID = await CreeIDOlySeeAdmin();
+  const lLien = "see.html?id=" + lID;
+  window.open(lLien, '_blank');
+  setTimeout(() =>
+  {
+    BoutonEtat('ButOuvrirOlySeeDepuisParam', 'inactif');
+  }, 300);
 }
 
 //--------------------------------------------------------------------------------------------------
