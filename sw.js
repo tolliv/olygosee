@@ -1,7 +1,7 @@
-const VersionSW = "2611.22l";
+const VersionSW = "2611.22m";
 const CACHE_NAME = 'OlyGo'+ VersionSW;
 const ASSETS = [
-  'serverSee.js',
+  'adrServerSee.js',
   'aide.css',
   'aide.js',
   'apple-touch-icon.png',
