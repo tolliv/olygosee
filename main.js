@@ -1,4 +1,4 @@
-// 2611.22k
+// 2611.22l
 //==================================================================================================
 // OlySee : fichier principal
 //==================================================================================================
@@ -482,7 +482,8 @@ async function getIPlocation()
 }
 
 //--------------------------------------------------------------------------------------------------
-// Chargement des positions depuis la base de données
+// Chargement des Positions (100) depuis la base de données
+// Si mode Famille, on enregistre la consultations
 //--------------------------------------------------------------------------------------------------
 async function ChargementPositions()
 {
