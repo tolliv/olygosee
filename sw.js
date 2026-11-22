@@ -1,4 +1,4 @@
-const VersionSW = "2611.22h";
+const VersionSW = "2611.22i";
 const CACHE_NAME = 'OlyGo'+ VersionSW;
 const ASSETS = [
   '_serverSee.js',
@@ -82,20 +82,23 @@ self.addEventListener('fetch', (e) =>
 
 
 // Activation nouveau Service Worker : nettoyage des anciens caches
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', (event) =>
+{
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          // Si le nom du cache n'est pas celui de la version actuelle, on le supprime
-          if (cacheName !== CACHE_NAME) {
+    caches.keys().then((cacheNames) =>
+    {
+      return Promise.all([
+        ...cacheNames.map((cacheName) =>
+        {
+          if (cacheName !== CACHE_NAME)
+          {
             console.log('Suppression ancien cache :', cacheName);
             return caches.delete(cacheName);
           }
-        })
-      );
+        }),
+        self.clients.claim()
+      ]);
     })
   );
-  console.log('Activation du nouveau SW');
-  return self.clients.claim();
+  console.log('Activation du nouveau SW et prise de contrôle des clients');
 });
