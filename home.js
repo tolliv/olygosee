@@ -33,7 +33,7 @@ if ('serviceWorker' in navigator)
       {
         if (newWorker.state === 'installed')
         {
-          console.log('installed');
+          console.log('Version installée');
           pid('TxtVersionFuture').innerHTML = "&nbsp;Nouvelle version installée&nbsp;";
         }
       });

@@ -1,4 +1,4 @@
-const VersionSW = "2611.22i";
+const VersionSW = "2611.22j";
 const CACHE_NAME = 'OlyGo'+ VersionSW;
 const ASSETS = [
   '_serverSee.js',
@@ -38,7 +38,6 @@ const ASSETS = [
   'imgRequetes.png',
   'imgRoute.png',
   'imgValider.png',
-  'see.html',
   'main.css',
   'main.js',
   'map.css',
@@ -50,6 +49,7 @@ const ASSETS = [
   'param.js',
   'requetes.css',
   'requetes.js',
+  'see.html',
   'texte.css',
   'texte.js',
   'traitements.css',
@@ -76,7 +76,14 @@ self.addEventListener('fetch', (e) =>
 {
   e.respondWith(
     caches.match(e.request, { ignoreSearch: true })
-      .then((res) => res || fetch(e.request))
+      .then((res) =>
+      {
+        return res || fetch(e.request);
+      })
+      .catch(() =>
+      {
+        console.error("Ressource introuvable et réseau coupé.");
+      })
   );
 });
 
