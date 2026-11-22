@@ -1,4 +1,4 @@
-// 2611.22j
+// 2611.22k
 //==================================================================================================
 // OlySee : fichier principal
 //==================================================================================================
@@ -79,6 +79,15 @@ function DateSupabase()
   return(Number(result, 10));
 }
 
+//--------------------------------------------------------------------------------------------------
+// Connexion réseau
+//--------------------------------------------------------------------------------------------------
+function IsConnected()
+{
+  let lConnected = navigator.onLine;
+//  lConnected = false;     // Mode DEBUG : simulation pas de réseau (commenter si RELEASE)
+  return(lConnected);
+}
 
 //--------------------------------------------------------------------------------------------------
 // Détection mode Admin ou Famille
@@ -1124,11 +1133,24 @@ function InactivationBoutons()
 //--------------------------------------------------------------------------------------------------
 async function LectureNomItinéraire()
 {
-  lStatus = await SupabaseReadNomItineraire();
-  if (lStatus.status == "OK" && lStatus.length > 0)
-    gNomItineraire = lStatus.data[0].msg;
+  let lRet = "";
+
+  // Si réseau
+  if (IsConnected())
+  {
+    lRet = await SupabaseReadNomItineraire();
+    if (lRet.status == "OK" && lRet.length > 0)
+      gNomItineraire = lRet.data[0].msg;
+    else
+      gNomItineraire = NOM_ITINEAIRE_DEFAUT;
+    localStorage.setItem('SeeNomItineraire', gNomItineraire);
+  }
+
+  // Si pas de réseau
   else
-    gNomItineraire = NOM_ITINEAIRE_DEFAUT;
+  {
+    gNomItineraire = localStorage.getItem('SeeNomItineraire');
+  }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1136,11 +1158,24 @@ async function LectureNomItinéraire()
 //--------------------------------------------------------------------------------------------------
 async function LecturePrenom()
 {
-  const lecture = await SupabaseReadPrenom();
-  if (lecture.status == "OK" && lecture.length > 0)
-    gPrenom = lecture.data[0].msg;
+  let lRet = "";
+
+  // Si réseau
+  if (IsConnected())
+  {
+    lRet = await SupabaseReadPrenom();
+    if (lRet.status == "OK" && lRet.length > 0)
+      gPrenom = lRet.data[0].msg;
+    else
+      gPrenom = PRENOM_DEFAUT;
+    localStorage.setItem('SeePrenom', gPrenom);
+  }
+
+  // Si pas de réseau
   else
-    gPrenom = PRENOM_DEFAUT;
+  {
+    gPrenom = localStorage.getItem('SeePrenom');
+  }
 }
 
 //--------------------------------------------------------------------------------------------------
