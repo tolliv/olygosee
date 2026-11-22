@@ -1,0 +1,234 @@
+<!-- OlySee 2611.22a -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>OlySee</title>
+  <meta charset='UTF-8'>
+</head>
+<body>
+  <!-- REF EXT START -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel='stylesheet' href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'/>
+  <script src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'></script>
+  <!-- REF EXT STOP -->
+
+  <!-- REF INT START -->
+  <script src='serverOlySee.js?v=2611.22a'></script>
+  <script src='map.js?v=2611.22a'> </script>
+  <link rel='stylesheet' type='text/css' href='map.css?v=2611.22a'>
+  <script src='main.js?v=2611.22a'></script>
+  <link rel='stylesheet' type='text/css' href='main.css?v=2611.22a'>
+  <script src='driverSupabaseOlySee.js?v=2611.22a'></script>
+  <!-- REF INT STOP -->
+
+
+  <!----- CONTAINER TOP --------------------------------------------------------------------------->
+  <div id='panTopContainer'>
+
+    <!----- PARTIE Informations de connexion pour Admin ----->
+    <div id='panDemarrage'>
+      <div id='txtTitreOlySee'><b>OlySee</b><br></div>
+      <img id='imgOlySee' src='imgOlySee.png?v=2611.22a'>
+      <div id='txtDemarrage'></div>
+
+      <!----- PARTIE Informations de connexion pour Admin ----->
+      <div id='panAdminConnexion'>
+        <div id='txtAdmin'></div>
+        <div style='height: 20px;'></div>
+        <div class='classSaisieTitre' >Adresse URL</div>
+        <input class='classSaisieTexte' id='txtUrl' oninput='ChampModifie()' type='text' placeholder="htpps://..."><br>
+        <div style='height: 15px;'></div>
+        <div class='classSaisieTitre' >Clé</div>
+        <input class='classSaisieTexte' id='txtKey' oninput='ChampModifie()' type='text' placeholder="sb_publishable..."><br>
+        <div style='height: 15px;'></div>
+        <div class='classSaisieTitre' >Numéro utilisateur</div>
+        <input class='classSaisieTexte' id='txtUsr' oninput='ChampModifie()' type='text' placeholder="(6 chiffres)"><br>
+        <div style='height: 20px;'></div>
+        <button class='classeValidationBoutons' id='butAdminValider' onclick='ValiderAdmin()' title="Valider les informations de connexion">Valider</button>
+        <div style='height: 20px;'></div>
+        <div id='txtValiderErreur'></div>
+        <div style='height: 30px;'></div>
+        <div id='panLiens'>
+          <span class='classSaisieTitre' >ID du randonneur pour OlyGo</span>
+          <button class='classeCopierBoutons' id='butAdminCopierID' onclick='ButAdminCopierIDClick()' title="">Copier</button>
+          <div class='classLink' id='txtValeurID'></div>
+          <div style='height: 20px;'></div>
+          <br>
+
+          <span class='classSaisieTitre'>OlySee pour la Famille</span>
+          <button class='classeCopierBoutons' id='butAdminCopierLienFamille' onclick='ButAdminCopierLienFamilleClick()' title="">Copier</button>
+          <div class='classLink' id='txtLienFamille'></div>
+          <div style='height: 5px;'></div>
+          <button class='classeValidationBoutons' id='butAdminAfficherModeFamille' onclick='ButAdminAfficherModeFamilleClick()' title="">Aller sur OlySee Famille</button>
+          <div style='height: 20px;'></div>
+          <br>
+
+          <span class='classSaisieTitre' >OlySee en mode Admin</span>
+          <button class='classeCopierBoutons' id='butAdminCopierLienAdmin' onclick='ButAdminCopierLienAdminClick()' title="">Copier</button>
+          <div class='classLink' id='txtLienAdmin'></div>
+          <div style='height: 5px;'></div>
+          <button class='classeValidationBoutons' id='butAdminAfficherModeAdmin' onclick='ButAdminAfficherModeAdminClick()' title="">Aller sur OlySee Admin</button>
+          <div style='height: 20px;'></div>
+
+          <!-- Compensation Bottom container -->
+          <div style='height: 28px;'></div>
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!---------- AFFICHAGE PRINCIPAL (après démarrage) ---------->
+    <div id='panAffichagePrincipal'>
+
+      <!----- PARTIE Boutons et menu ----->
+      <div id='panButtonsMenu'>
+
+        <!-- Boutons sur la barre du haut -->
+        <div id='panBoutonsDuHaut'>
+          <button id='butRafraichir' class='classBoutonsUser' onclick='Rafraichir("partial")' title="Rafraichir les données">Rafraichir</button>
+          <button id='butChoixCarte' class='classBoutonsUser' onclick='ChoixCarte()' title="Changer de carte">Carte</button>
+          <button id='butPartager' class='classBoutonsUser' onclick='Partager()' title="Partager le lien">Partager</button>
+          <button id='butAdmin' class='classBoutonsAdmin' onclick='ButAdminClick()' style='display: none;'title='TODO'>Admin</button>
+          <br>
+          <button id='butAdminAddPoint' onclick='ButAdminTstAddPoint()' style='display: none;'title='Ajoute un point'>+1</button>
+        </div>
+
+        <!-- Menu Admin -->
+        <div id='panAdminCommandes'>
+          <div id='txtVersion' style='text-align: center;'><small>version</small></div>
+          <small><div id='txtVersionFuture' style='text-align: center; display: none;'></div></small>
+          <div style='color: #008;'><b>Prénom</b></div>
+          <div style='height: 5px;'></div>
+          <input id='txtAdminPrenom' class='classAdminInput' type='text' placeholder="">
+          <button id='butAdminModifierPrenom' class='classAdminBouton' onclick='ButAdminModifierPrenomClick()'>Modifier</button><br>
+
+          <!-- Séparation -->
+          <div style='height: 1px;border-bottom: 1px solid #CCC;margin-top: 20px;margin-bottom: 10px;'></div>
+          <div style='color: #008;'><b>Itinéraire</b></div>
+          <div style='height: 5px;'></div>
+          <div class='classAdminSTitre'>Tracé</div>
+          <span class='classAdminInfo' id='txtAdminNbPoints' >0 point</span>
+          <button id='butAdminCharger' class='classAdminBouton' onclick='ButAdminChargerClick()'>Charger</button><br>
+          <br>
+          <div id='txtAdminDebug' style='font-size: 0.8em; display: none;'></div>
+          <div class='classAdminSTitre'>Nom actuel</div>
+          <input id='txtAdminNomItineraire' class='classAdminInput' type='text' placeholder="">
+          <button id='butAdminModifierNom' class='classAdminBouton' onclick='ButAdminModifierNomClick()'>Modifier</button><br>
+
+          <!-- Séparation -->
+          <div style='height: 1px;border-bottom: 1px solid #CCC;margin-top: 20px;margin-bottom: 10px;'></div>
+          <div style='color: #008;'><b>Positions</b></div>
+          <div style='height: 5px;'></div>
+          <span class='classAdminInfo'>Dernière position</span>
+          <button id='butAdminEffacerDernierePosition' class='classAdminBouton' onclick='ButAdminEffacerDernierePositionClick()'>Effacer</button><br>
+          <div style='height: 5px;'></div>
+          <span class='classAdminInfo' id='txtAdminNbPositions'>0 position</span>
+          <button id='butAdminEffacerToutesPositions' class='classAdminBouton' onclick='ButAdminEffacerToutesPositionsClick()'>Effacer</button>
+
+          <!-- Séparation -->
+          <div style='height: 1px;border-bottom: 1px solid #CCC;margin-top: 20px;margin-bottom: 10px;'></div>
+          <div style='color: #008;'><b>Consultations</b></div>
+          <div style='height: 5px;'></div>
+          <span class='classAdminInfo' id='txtAdminNbConsultations'>0 consultation</span>
+          <button id='butAdminEffacerToutesConsultations' class='classAdminBouton' onclick='ButAdminEffacerToutesConsultationsClick()'>Effacer</button>
+          <div style='font-size: 0.8em;'>Consultations faites par la Famille</div>
+
+          <!-- Séparation -->
+          <div style='height: 1px;border-bottom: 1px solid #CCC;margin-top: 20px;margin-bottom: 10px;'></div>
+          <div style='color: #008;'><b>Réinitialiser</b></div>
+          <div style='height: 5px;'></div>
+          <span class='classAdminInfo'>Tout</span>
+          <button id='butAdminEffacerTout' class='classAdminBouton' onclick='ButAdminEffacerToutClick()'>Effacer</button><br>
+          <div style='font-size: 0.8em;'>Prénom, Itinéraire, Positions, Consultations</div>
+          <br>
+          <br>
+          <div id='txtMiseAJour' style='display: none;'>
+          Note : la mise à jour sera faite à la fermeture de ce menu.
+          </div>
+        </div>
+
+        <!-- Menu pour la carte avec Radio Buttons -->
+        <div id="panChoixCarte">
+          <label><input type="radio" class='classTexteMenu' id='idOsm' name="fondCarte" onclick="SelectionnerFond('osm')" checked>OpenStreetMap&nbsp;
+          </label><br>
+          <label><input type="radio" class='classTexteMenu' id='idTopo' name="fondCarte" onclick="SelectionnerFond('topo')">OpenTopMap
+          </label><br>
+          <label><input type="radio" class='classTexteMenu' id='idIgnPlan' name="fondCarte" onclick="SelectionnerFond('ignPlan')">IGN Plan
+          </label><br>
+          <label><input type="radio" class='classTexteMenu' id='idSatellite' name="fondCarte" onclick="SelectionnerFond('satellite')">Satellite
+          </label>
+        </div>
+
+        <!-- Boutons choix affichage positions -->
+        <div id='panBoutonsPositions'>
+          <b>Position :</b>
+          <label><input type="radio" class='classTexteMenu' id='idPositionLast' name="ChoixAffichagePositions" onclick="SelectionnerChoixPosition('last')" checked>Dernière</label>
+          <label><input type="radio" class='classTexteMenu' id='idPositionAll' name="ChoixAffichagePositions" onclick="SelectionnerChoixPosition('all')">Toutes</label>
+        </div>
+
+      </div>
+
+      <!----- PARTIE Titre ----->
+      <div id='panTitreSuivi' style='font-size: 1.8em;'>
+        <span id='txtTitre' onclick='SequenceAdminOn()'>Suivi de</span>
+        <span id='txtPrenom' style='opacity: 0;'>&nbsp;</span>
+        <span id='txtPourcentage'></span>
+      </div>
+
+      <!----- PARTIE Progression (Nom itinéraire + position + distances) ----->
+      <div id='panAllProgression'>
+
+        <!----- PARTIE Nom de l'itinéraire ----->
+        <div id='txtNomItineraire' style='display: none;'>Itinéraire</div>
+
+        <!----- PARTIE Progression ----->
+        <div id='panProgression'>
+          <div id='progression-container'>
+            <span id='spanDeplacementCurseur'><img id='imgCurseur'></span>
+            <span id='txtHeurePosition'></span>
+            <div id='progression-track'></div>
+            <div id='progression-fill'></div>
+          </div>
+          <div id="progression-labels">
+            <span id='spanDistanceMin'>0km</span><span id='spanDistanceMax'>0km</span>
+          </div>
+          <div id="divDistances">
+            <span id='txtDistanceParcourue'></span>
+            &nbsp;&nbsp;-&nbsp;&nbsp;
+            <span id='txtDistanceRestante'></span>
+          </div>
+        </div>
+      </div>
+
+      <!----- PARTIE Map ----->
+      <div id='map'></div>
+
+    </div>
+
+    <!----- PARTIE Chargement ----->
+    <div id='panChargement'>
+    </div>
+
+  </div>
+
+  <!----- CONTAINER BOTTOM ------------------------------------------------------------------------>
+  <div id='panBottomContainer'>
+    <span id='spanBottom' class='classTextePetit'>
+      <span><b>Légende</b>&nbsp;&nbsp;</span>
+      <img id='imgLegendeDebut'>
+      <span>&nbsp;Début&nbsp;&nbsp;&nbsp;</span>
+      <img id='imgLegendePosition'>
+      <span>&nbsp;Position&nbsp;&nbsp;&nbsp;</span>
+      <img id='imgLegendeBivouac'>
+      <span>&nbsp;Bivouac&nbsp;&nbsp;&nbsp;</span>
+      <img id='imgLegendeFin'>
+      <span>&nbsp;Fin</span>
+    </span>
+  </div>
+
+</body>
+</html>
+
