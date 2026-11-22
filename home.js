@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', async function()
   // Dans écran HOME
   pid('TxtVersionActuelle').innerHTML = "Version " + VERSION;
 
-  console.log("Serveur OlySee: " + gServerOlySee);
+  console.log("Serveur OlySee: " + gServerSee);
 
   // Affichage de l'écran HOME
   AfficherEcranHOME();

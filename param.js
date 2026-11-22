@@ -210,7 +210,7 @@ function CreeLienOlySeeFamille()
   let lLien = "";
   const lTxtID = pid('TxtID').value;
   if (lTxtID != "")
-    lLien = gServerOlySee + "index.html?id=" + lTxtID;
+    lLien = gServerSee + "see.html?id=" + lTxtID;
   return (lLien);
 }
 
@@ -225,7 +225,7 @@ async function CreeLienOlySeeAdmin()
   {
     const lRetDecode = await decodeSupabaseConfig(lTxtID);
     const lRetEncode = await encodeSupabaseConfig(lRetDecode.url, lRetDecode.key, lRetDecode.usr, true);
-    lLien = gServerOlySee + "index.html?admin=" + lRetEncode;
+    lLien = gServerSee + "see.html?admin=" + lRetEncode;
   }
   return (lLien);
 }
@@ -319,6 +319,7 @@ async function ButTesterGeolocClick()
 {
   BoutonEtat('ButTesterGeoloc', 'actif');
   pid('txtResultatTestGeoloc').innerHTML = "En cours...";
+  await sleep(300);
   const precision = pid('TxtPrecision').value;
 
   // Lancement géolocalisation

@@ -1,8 +1,8 @@
-// v=2611.22d
+// v=2611.22e
 //==================================================================================================
 // OlySee : fichier principal
 //==================================================================================================
-const gVersion = "v=2611.22d";
+const gVersion = "v=2611.22e";
 const NOM_ITINEAIRE_DEFAUT = "(aucun itinéraire)";
 const PRENOM_DEFAUT = "Toto";
 var gItineraire = [];
@@ -243,14 +243,14 @@ async function GenerationLienID()
 async function GenerationLienFamille()
 {
   const lBase62 = await encodeSupabaseConfig(API_URL, API_KEY, USER, 0);
-  const lLien = gServerOlySee + "index.html?id=" + lBase62;
+  const lLien = gServerSee + "see.html?id=" + lBase62;
   return (lLien);
 }
 
 async function GenerationLienAdmmin()
 {
   const lBase62 = await encodeSupabaseConfig(API_URL, API_KEY, USER, 1);
-  const lLien = gServerOlySee + "index.html?admin=" + lBase62;
+  const lLien = gServerSee + "see.html?admin=" + lBase62;
   return (lLien);
 }
 
