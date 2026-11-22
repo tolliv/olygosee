@@ -1,8 +1,7 @@
 //==================================================================================================
-// 2611.22e
-// GVersion.js : Gobal Version
+// GlobalVersionning.js : Gobal Version
 // Change la Date dans les fichiers du répertoire courant
-// S'exécute via node.js : node gversion.js
+// S'exécute via node.js : node GlobalVersionning.js
 // Note : il faut créer le fichier date.ref avec la date du jour exemple 2611.15H
 //==================================================================================================
 
@@ -58,11 +57,11 @@ async function replaceInDir(dir, searchStr, replaceStr, extensions = ['.js', '.c
 }
 
 //--------------------------------------------------------------------------------------------------
-// Lit la version stockée dans le fichier Gdate.ref
+// Lit la version stockée dans le fichier GlobalDate.ref
 //--------------------------------------------------------------------------------------------------
 async function readDateRef()
 {
-  const filePath = "Gdate.ref";
+  const filePath = "GlobalDate.ref";
   try
   {
     const data = await fs.readFile(filePath, 'utf8');
@@ -92,7 +91,7 @@ function formatDateRef()
 //--------------------------------------------------------------------------------------------------
 async function main()
 {
-  console.log("----- GVersion -----");
+  console.log("----- GlobalVersionning -----");
   const lDateRef = await readDateRef();
   const lDateNew = formatDateRef();
   console.log("Version actuelle   " + lDateRef);

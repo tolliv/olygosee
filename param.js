@@ -301,13 +301,13 @@ async function ButTesterIDClick()
 }
 
 //--------------------------------------------------------------------------------------------------
-// Ouvrir OlySee en mode Admin
+// Ouvrir OlySee en local et mode Admin
 //--------------------------------------------------------------------------------------------------
 async function ButOuvrirOlySeeDepuisParamClick()
 {
   BoutonEtat('ButOuvrirOlySeeDepuisParam', 'actif');
   const lLien = await CreeLienOlySeeAdmin();
-  window.open(lLien, '_blank');
+  window.open("see.html", '_blank');
   await sleep(300);
   BoutonEtat('ButOuvrirOlySeeDepuisParam', 'inactif'  );
 }
@@ -336,7 +336,7 @@ async function ButTesterGeolocClick()
     // Si nouvelle position valide, on l'affiche
     if (lStatus > 1)
     {
-      pid('txtResultatTestGeoloc').innerHTML = "Précision = " + gGeoAccuracy + "m";
+      pid('txtResultatTestGeoloc').innerHTML = "Précision = " + gGeoAccuracy + "m (reste " + Math.round(lTimeout/10) + "s)";
     }
 
     // Limitation temps
@@ -360,7 +360,7 @@ async function ButTesterGeolocClick()
     pid('TxtMeteo').innerHTML += "Erreur : ";
     if (gGeoStatus == -1)   pid('txtResultatTestGeoloc').innerHTML = "Géolocalisation non supportée";
     if (gGeoStatus == -2)   pid('txtResultatTestGeoloc').innerHTML = "Permission refusée";
-    if (gGeoStatus == -3)   pid('txtResultatTestGeoloc').innerHTML = "Précision insuffisante";
+    if (gGeoStatus == -3)   pid('txtResultatTestGeoloc').innerHTML = "Précision non atteinte";
   }
   BoutonEtat('ButTesterGeoloc', 'inactif');
 }

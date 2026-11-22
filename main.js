@@ -1,8 +1,7 @@
-// v=2611.22e
+// 2611.22f
 //==================================================================================================
 // OlySee : fichier principal
 //==================================================================================================
-const gVersion = "v=2611.22e";
 const NOM_ITINEAIRE_DEFAUT = "(aucun itinéraire)";
 const PRENOM_DEFAUT = "Toto";
 var gItineraire = [];
@@ -87,7 +86,7 @@ function DateSupabase()
 async function Run()
 {
   // Texte de démarrage
-  pid('txtDemarrage').innerHTML = "<span style='font-size: 1em;'>" + gVersion.substring(2, 10) + "</span><br>";
+  pid('txtDemarrage').innerHTML = "<span style='font-size: 1em;'>" + VERSION + "</span><br>";
 
   // Récupération ID sur ligne d'adresse
   const queryString = window.location.search;
@@ -1315,7 +1314,7 @@ async function ButAdminClick()
 
     //----- Remplissage des champs avant l'affichage -----
     // Version
-    pid('txtVersion').innerHTML = "<small><i>Version " + gVersion.substring(2, 10) + "</i></small>";
+    pid('txtVersion').innerHTML = "<small><i>Version " + VERSION + "</i></small>";
 
     // Prénom
     pid('txtAdminPrenom').value = gPrenom;
