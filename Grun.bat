@@ -12,6 +12,7 @@ set "RESET=%ESC%[0m"
 
 :: Versionning pour OlyGo et OlySee
 node gversion.js
+set /p COMMIT_DATE=<Gdate.ref
 echo Git commit avec la date : %GREEN%%COMMIT_DATE%%RESET%
 git add .
 git status
