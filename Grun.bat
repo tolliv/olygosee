@@ -12,20 +12,8 @@ set "RESET=%ESC%[0m"
 
 :: Versionning pour OlyGo et OlySee
 node gversion.js
-set /p COMMIT_DATE=<Gdate.ref
-
-
-
-:: Interaction utilisateur
-set /p choice="Voulez-vous commiter ? (o/n) : "
-
-if /i "%choice%"=="o" (
-    echo Git commit avec la date : %GREEN%%COMMIT_DATE%%RESET%
-    git add .
-    git status
-    git commit -m "Commit du %COMMIT_DATE% depuis Android Studio"
-    git push -u origin main
-
-) else (
-    echo Fin du script sans commit.
-)
+echo Git commit avec la date : %GREEN%%COMMIT_DATE%%RESET%
+git add .
+git status
+git commit -m "Commit du %COMMIT_DATE% depuis Android Studio"
+git push -u origin main

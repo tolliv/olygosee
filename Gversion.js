@@ -1,5 +1,5 @@
 //==================================================================================================
-// 2611.22b
+// 2611.22c
 // GVersion.js : Gobal Version
 // Change la Date dans les fichiers du répertoire courant
 // S'exécute via node.js : node gversion.js

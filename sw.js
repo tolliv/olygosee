@@ -1,4 +1,4 @@
-const VersionSW = "2611.22b";
+const VersionSW = "2611.22c";
 const CACHE_NAME = 'OlyGo'+ VersionSW;
 const ASSETS = [
   'aide.css',

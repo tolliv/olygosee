@@ -1,7 +1,7 @@
 {
   "name": "OlyGo",
   "short_name": "OlyGo",
-  "start_url": "index.html",
+  "start_url": "go.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
