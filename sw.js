@@ -1,4 +1,4 @@
-const VersionSW = "2611.22m";
+const VersionSW = "2611.23a";
 const CACHE_NAME = 'OlyGo'+ VersionSW;
 const ASSETS = [
   'adrServerSee.js',
@@ -82,7 +82,7 @@ self.addEventListener('fetch', (e) =>
       })
       .catch(() =>
       {
-        console.error("Ressource introuvable et réseau coupé.");
+        // console.error("Ressource introuvable et réseau coupé.");
       })
   );
 });

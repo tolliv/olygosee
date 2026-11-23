@@ -323,7 +323,8 @@ async function ButOuvrirOlySeeDepuisParamClick()
   BoutonEtat('ButOuvrirOlySeeDepuisParam', 'actif');
   const lID = await CreeIDOlySeeAdmin();
   const lLien = "see.html?id=" + lID;
-  window.open(lLien, '_blank');
+//  window.open(lLien, '_blank');
+  window.location.assign(lLien);
   setTimeout(() =>
   {
     BoutonEtat('ButOuvrirOlySeeDepuisParam', 'inactif');

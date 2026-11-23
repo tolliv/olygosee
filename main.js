@@ -1,4 +1,4 @@
-// 2611.22m
+// 2611.23a
 //==================================================================================================
 // OlySee : fichier principal
 //==================================================================================================
@@ -18,7 +18,6 @@ var gPrenom = PRENOM_DEFAUT;
 var gNomItineraire = NOM_ITINEAIRE_DEFAUT;
 var gDoitEtreRafraichi = false;
 var gPassageCntAdmin = 0;
-
 
 //----- Démarrage de l'application -----
 
@@ -493,95 +492,113 @@ async function ChargementPositions()
   let longueurPrev = 0;
 
   //----- CONSULTATION -----
-  // Récupération de la ville de la famille qui consulte
-//  const detailConsultant = await getIPlocation();
-//  console.log("Consultant: " + detailConsultant);
+  // Récupération de la ville de la famille qui consulte (TODO ne fonctionne pas bien et c'est illégal)
+  // const detailConsultant = await getIPlocation();
+  // console.log("Consultant: " + detailConsultant);
 
   // Mémorise cette consultation si mode famille
-  if (gModeAdmin == false)
+  if (IsConnected())
   {
-    console.log("Mémorisation consultation");
-    const lDate = DateSupabase();
-    const nouveauPoint =
+    if (gModeAdmin == false)
     {
-        date: lDate,
-        user: USER,
-        type: 200,
-        msg: ""
-    };
-    lRet = await SupabaseWrite(nouveauPoint);
-    if (lRet != "OK")
-    {
-      // TODO cas d'erreur
+      console.log("Mémorisation consultation");
+      const lDate = DateSupabase();
+      const nouveauPoint =
+      {
+          date: lDate,
+          user: USER,
+          type: 200,
+          msg: ""
+      };
+      lRet = await SupabaseWrite(nouveauPoint);
+      if (lRet != "OK")
+      {
+        // TODO cas d'erreur
+      }
     }
   }
 
   //----- POSITIONS -----
-  // Compte le nombre de points avant de les charger
-  const lCmd = "user=eq." + USER
-             + "&type=eq.100"     // Type trace
-             + "&order=id.asc"
-             + "&limit=0";        // Ne charge rien
-  let { status, count } = await SupabaseCount(lCmd);
-  if (status == "OK")
+  if (IsConnected())
   {
-    longueurPositions = count;
-    gPositions = [];                // Effacement avant la lecture
-    if (longueurPositions > 0)
+    // Compte le nombre de points avant de les charger
+    const lCmd = "user=eq." + USER
+               + "&type=eq.100"     // Type trace
+               + "&order=id.asc"
+               + "&limit=0";        // Ne charge rien
+    let { status, count } = await SupabaseCount(lCmd);
+    if (status == "OK")
     {
-      let offset = 0;
-
-      // Limitation par GET
-      const batchSize = 1000;
-      while (1)
+      longueurPositions = count;
+      gPositions = [];                // Effacement avant la lecture
+      if (longueurPositions > 0)
       {
-        const lCmd = "user=eq." + USER
-                   + "&type=eq.100"     // Type trace
-                   + "&order=id.asc"
-                   + "&offset=" + offset
-                   + "&limit=" + batchSize;
-        let { status, length, data } = await SupabaseRead(lCmd);
+        let offset = 0;
 
-        // Si erreur
-        if (status != "OK")
-          break;
-
-        // Si OK
-        else
+        // Limitation par GET
+        const batchSize = 1000;
+        while (1)
         {
-          // Nouveaux points
-          if (length > 0)
+          const lCmd = "user=eq." + USER
+                     + "&type=eq.100"     // Type trace
+                     + "&order=id.asc"
+                     + "&offset=" + offset
+                     + "&limit=" + batchSize;
+          let { status, length, data } = await SupabaseRead(lCmd);
+
+          // Si erreur
+          if (status != "OK")
+            break;
+
+          // Si OK
+          else
           {
-            gPositions = gPositions.concat(data);
-            longueurPrev = gPositions.length;
+            // Nouveaux points
+            if (length > 0)
+            {
+              gPositions = gPositions.concat(data);
+              longueurPrev = gPositions.length;
 
-            // Sinon, on continue avec la prochaine page
-            offset += batchSize;
-           }
+              // Sinon, on continue avec la prochaine page
+              offset += batchSize;
+             }
 
-          // Fin du chargement
-           else
-              break;
+            // Fin du chargement
+             else
+                break;
+          }
         }
+
+        // Fin du chargement
+        if (status !== "OK")
+          console.log("Erreur chargement positions : " + status);
+        else
+          console.log("Chargement positions OK " + gPositions.length + " points");
+        lRet = status;
       }
 
-      // Fin du chargement
-      if (status !== "OK")
-        console.log("Erreur chargement positions : " + status);
+      // Aucun point mais ce n'est pas une erreur
       else
-        console.log("Chargement positions OK " + gPositions.length + " points");
+      {
+        console.log("Aucune position mémorisée");
+        lRet = "OK";
+      }
+    }
+    else
+    {
       lRet = status;
     }
 
-    // Aucun point mais ce n'est pas une erreur
-    else
-    {
-      console.log("Aucune position mémorisée");
-      lRet = "OK";
-    }
+    // Mémorisation dans le localstorage même si le tableau est vide
+    localStorage.setItem('OlySee_positions', JSON.stringify(gPositions));
   }
+
+  // Pas de connexion, on récupère ce qu'il y a dans le localstorage
   else
-    lRet = status;
+  {
+    gPositions = JSON.parse(localStorage.getItem('OlySee_positions'));
+    console.log("Pas de connexion pour les Positions, restore : " + gPositions.length + " points");
+  }
 
   // Affichage et retour
   AfficheNbPositions();
@@ -608,167 +625,99 @@ async function ChargementItineraire()
   let longueurItineraire = 0;
   let longueurPrev = 0;
 
-  pid('panChargement').style.display = 'block';
-
-  htmlInt = "<br><b>Chargement de l'itinéraire</b><br>";
-  pid('panChargement').innerHTML = htmlInt;
-
-  // Compte le nombre de points avant de les charger
-  const lCmd = "user=eq." + USER
-             + "&type=eq.0"
-             + "&order=id.asc"
-             + "&limit=0";        // Ne charge rien
-  let { status, count } = await SupabaseCount(lCmd);
-  if (status == "OK")
+  if (IsConnected())
   {
-    longueurItineraire = count;
-    htmlInt += "Itinéraire (" + longueurItineraire + " points) : ";
-    pid('panChargement').innerHTML = htmlInt + "0%";
+    pid('panChargement').style.display = 'block';
 
-    if (longueurItineraire > 0)
+    htmlInt = "<br><b>Chargement de l'itinéraire</b><br>";
+    pid('panChargement').innerHTML = htmlInt;
+
+    // Compte le nombre de points avant de les charger
+    const lCmd = "user=eq." + USER
+               + "&type=eq.0"
+               + "&order=id.asc"
+               + "&limit=0";        // Ne charge rien
+    let { status, count } = await SupabaseCount(lCmd);
+    if (status == "OK")
     {
-      gItineraire = [];
-      let offset = 0;
+      longueurItineraire = count;
+      htmlInt += "Itinéraire (" + longueurItineraire + " points) : ";
+      pid('panChargement').innerHTML = htmlInt + "0%";
 
-      // Limitation par GET
-      const batchSize = 1000;
-      while (1)
+      if (longueurItineraire > 0)
       {
-        const lCmd = "user=eq." + USER
-                   + "&type=eq.0"
-                   + "&order=id.asc"
-                   + "&offset=" + offset
-                   + "&limit=" + batchSize;
-        let { status, length, data } = await SupabaseRead(lCmd);
+        gItineraire = [];
+        let offset = 0;
 
-        // Si erreur
-        if (status != "OK")
-          break;
-
-        // Si OK
-        else
+        // Limitation par GET
+        const batchSize = 1000;
+        while (1)
         {
-          // Nouveaux points
-          if (length > 0)
+          const lCmd = "user=eq." + USER
+                     + "&type=eq.0"
+                     + "&order=id.asc"
+                     + "&offset=" + offset
+                     + "&limit=" + batchSize;
+          let { status, length, data } = await SupabaseRead(lCmd);
+
+          // Si erreur
+          if (status != "OK")
+            break;
+
+          // Si OK
+          else
           {
-            gItineraire = gItineraire.concat(data);
-            for (let x = longueurPrev; x < gItineraire.length; x++)
+            // Nouveaux points
+            if (length > 0)
             {
-              pid('panChargement').innerHTML = htmlInt + "<b>"+ Math.round(100*x/longueurItineraire) + "%</b>";
-            }
-            await sleep(50);
-            longueurPrev = gItineraire.length;
+              gItineraire = gItineraire.concat(data);
+              for (let x = longueurPrev; x < gItineraire.length; x++)
+              {
+                pid('panChargement').innerHTML = htmlInt + "<b>"+ Math.round(100*x/longueurItineraire) + "%</b>";
+              }
+              await sleep(50);
+              longueurPrev = gItineraire.length;
 
-            // Sinon, on continue avec la prochaine page
-            offset += batchSize;
-           }
+              // Sinon, on continue avec la prochaine page
+              offset += batchSize;
+             }
 
-          // Fin du chargement
-           else
-              break;
+            // Fin du chargement
+             else
+                break;
+          }
         }
-      }
 
-      // Fin du chargement
-      if (status !== "OK")
-        console.log("Erreur chargement itinéraire : " + status);
-      else
-        console.log("Chargement itinéraire OK " + gItineraire.length + " points");
-      lRet = status;
-    }
-
-    // Aucun point mais ce n'est pas une erreur
-    else
-      lRet = "OK";
-  }
-  else
-    lRet = status;
-
-  pid('panChargement').style.display = 'none';
-  return(lRet);
-}
-
-//--------------------------------------------------------------------------------------------------
-// Chargement de l'itinéraire depuis la base de données - en mode Admin
-// Retourne un status
-//--------------------------------------------------------------------------------------------------
-async function ChargementItineraireAdmin_TODELETE() // TODO
-{
-  let lRet = "";
-  let htmlInt = "";
-  let longueurItineraire = 0;
-
-  console.log("Chargement itinéraire admin..");
-
-  // Compte le nombre de points avant de les charger
-  const lCmd = "user=eq." + USER
-             + "&type=eq.0"
-             + "&order=id.asc"
-             + "&limit=0";        // Ne charge rien
-  let { status, count } = await SupabaseCount(lCmd);
-  if (status == "OK")
-  {
-    longueurItineraire = count;
-    console.log("Nombre de points : " + longueurItineraire);
-
-    if (longueurItineraire > 0)
-    {
-      gItineraire = [];
-      let offset = 0;
-
-      // Limitation par GET
-      const batchSize = 1000;
-      while (1)
-      {
-        const lCmd = "user=eq." + USER
-                   + "&type=eq.0"
-                   + "&order=id.asc"
-                   + "&offset=" + offset
-                   + "&limit=" + batchSize;
-        let { status, length, data } = await SupabaseRead(lCmd);
-
-        // Si erreur
-        if (status != "OK")
-          break;
-
-        // Si OK
+        // Fin du chargement
+        if (status !== "OK")
+          console.log("Erreur chargement itinéraire : " + status);
         else
-        {
-          // Nouveaux points
-          if (length > 0)
-          {
-            gItineraire = gItineraire.concat(data);
-            pid('txtAdminNbPoints').innerHTML = S(gItineraire.length, "point");
-
-            // Sinon, on continue avec la prochaine page
-            offset += batchSize;
-           }
-
-          // Fin du chargement
-           else
-              break;
-        }
+          console.log("Chargement itinéraire OK " + gItineraire.length + " points");
+        lRet = status;
       }
 
-      // Fin du chargement
-      if (status !== "OK")
-        console.log(status);
+      // Aucun point mais ce n'est pas une erreur
       else
-        console.log("OK " + gItineraire.length + " points");
-      lRet = status;
+        lRet = "OK";
     }
-
-    // Aucun point mais ce n'est pas une erreur
     else
-      lRet = "OK";
-  }
-  else
-    lRet = status;
+      lRet = status;
 
-  pid('txtAdminNbPoints').innerHTML = S(gItineraire.length, "point");
+    pid('panChargement').style.display = 'none';
+
+    // Mémorisation dans le localstorage même si le tableau est vide
+    localStorage.setItem('OlySee_itineraire', JSON.stringify(gItineraire));
+  }
+
+  // Pas de connexion
+  else
+  {
+    gItineraire = JSON.parse(localStorage.getItem('OlySee_itineraire'));
+    console.log("Pas de connexion pour l'itinéraire mais restore : " + gItineraire.length + " points");
+    lRet = "OK";
+  }
   return(lRet);
 }
-
 
 //--------------------------------------------------------------------------------------------------
 // Activation/Désactivation d'un bouton
@@ -792,7 +741,6 @@ function BoutonEtat(bouton, etat)
     but.state = 'inactif';
   }
 }
-
 
 //--------------------------------------------------------------------------------------------------
 // Met à jour la position du randonneur sur la barre

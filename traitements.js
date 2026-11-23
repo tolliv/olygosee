@@ -244,7 +244,8 @@ async function ButOuvrirOlySeeClick()
   // Ouvre le lien dans un nouvel onglet
   if (lLien)
   {
-    window.open(lLien, '_blank');
+    // window.open(lLien, '_blank');
+    window.location.assign(lLien);
   }
 
   await sleep(300);
