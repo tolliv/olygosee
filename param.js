@@ -181,6 +181,28 @@ function changerTaillePoliceZoneSaisieQuery(NomClasse, nouvelleTaille)
 }
 
 //-------------------------------------------------------
+// Copier l'ID dans le presse-papier
+//-------------------------------------------------------
+async function ButCopierIDClick()
+{
+  BoutonEtat('ButCopierID', 'actif');
+  const lID = pid('TxtID').value;
+  try
+  {
+    await navigator.clipboard.writeText(lID);
+    await sleep(300);
+    pid('txtResultatCopierID').innerHTML = "ID copié";
+  }
+  catch (err)
+  {
+    console.error("Erreur lors de la copie : ", err);
+    await sleep(300);
+  }
+
+  BoutonEtat('ButCopierID', 'inactif');
+}
+
+//-------------------------------------------------------
 // Copier l'adresse complète dans le presse-papier
 //-------------------------------------------------------
 async function ButCopierLienClick()

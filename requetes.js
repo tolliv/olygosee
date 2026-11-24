@@ -48,7 +48,7 @@ async function MiseAjourConsultations()
   const lCmdRead = "user=eq." + USER
                  + "&type=eq.200"
                  + "&order=date.desc"
-                 + "&limit=20"
+                 + "&limit=100"
   const lRet = await SupabaseRead(lCmdRead);
   if (lRet.status == "OK")
   {

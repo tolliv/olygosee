@@ -1,4 +1,4 @@
-// 2611.23a
+// 2611.24a
 //==================================================================================================
 // OlySee : fichier principal
 //==================================================================================================
@@ -627,86 +627,109 @@ async function ChargementItineraire()
 
   if (IsConnected())
   {
-    pid('panChargement').style.display = 'block';
-
-    htmlInt = "<br><b>Chargement de l'itinéraire</b><br>";
-    pid('panChargement').innerHTML = htmlInt;
-
-    // Compte le nombre de points avant de les charger
-    const lCmd = "user=eq." + USER
-               + "&type=eq.0"
-               + "&order=id.asc"
-               + "&limit=0";        // Ne charge rien
-    let { status, count } = await SupabaseCount(lCmd);
-    if (status == "OK")
+    // Vérifie si l'itinéraire a été modifié sur la base de données et doit être rechargé
+    const lDoitEtreRafraichi = await VerifieMAJitineraire();
+    if (lDoitEtreRafraichi)
     {
-      longueurItineraire = count;
-      htmlInt += "Itinéraire (" + longueurItineraire + " points) : ";
-      pid('panChargement').innerHTML = htmlInt + "0%";
+      pid('panChargement').style.display = 'block';
 
-      if (longueurItineraire > 0)
+      htmlInt = "<br><b>Chargement de l'itinéraire</b><br>";
+      pid('panChargement').innerHTML = htmlInt;
+
+      // Compte le nombre de points avant de les charger
+      const lCmd = "user=eq." + USER
+                 + "&type=eq.0"
+                 + "&order=id.asc"
+                 + "&limit=0";        // Ne charge rien
+      let { status, count } = await SupabaseCount(lCmd);
+      if (status == "OK")
       {
-        gItineraire = [];
-        let offset = 0;
+        longueurItineraire = count;
+        htmlInt += "Itinéraire (" + longueurItineraire + " points) : ";
+        pid('panChargement').innerHTML = htmlInt + "0%";
 
-        // Limitation par GET
-        const batchSize = 1000;
-        while (1)
+        if (longueurItineraire > 0)
         {
-          const lCmd = "user=eq." + USER
-                     + "&type=eq.0"
-                     + "&order=id.asc"
-                     + "&offset=" + offset
-                     + "&limit=" + batchSize;
-          let { status, length, data } = await SupabaseRead(lCmd);
+          gItineraire = [];
+          let offset = 0;
 
-          // Si erreur
-          if (status != "OK")
-            break;
-
-          // Si OK
-          else
+          // Limitation par GET
+          const batchSize = 1000;
+          while (1)
           {
-            // Nouveaux points
-            if (length > 0)
+            const lCmd = "user=eq." + USER
+                       + "&type=eq.0"
+                       + "&order=id.asc"
+                       + "&offset=" + offset
+                       + "&limit=" + batchSize;
+            let { status, length, data } = await SupabaseRead(lCmd);
+
+            // Si erreur
+            if (status != "OK")
+              break;
+
+            // Si OK
+            else
             {
-              gItineraire = gItineraire.concat(data);
-              for (let x = longueurPrev; x < gItineraire.length; x++)
+              // Nouveaux points
+              if (length > 0)
               {
-                pid('panChargement').innerHTML = htmlInt + "<b>"+ Math.round(100*x/longueurItineraire) + "%</b>";
-              }
-              await sleep(50);
-              longueurPrev = gItineraire.length;
+                gItineraire = gItineraire.concat(data);
+                for (let x = longueurPrev; x < gItineraire.length; x++)
+                {
+                  pid('panChargement').innerHTML = htmlInt + "<b>"+ Math.round(100*x/longueurItineraire) + "%</b>";
+                }
+                await sleep(50);
+                longueurPrev = gItineraire.length;
 
-              // Sinon, on continue avec la prochaine page
-              offset += batchSize;
-             }
+                // Sinon, on continue avec la prochaine page
+                offset += batchSize;
+               }
 
-            // Fin du chargement
-             else
-                break;
+              // Fin du chargement
+               else
+                  break;
+            }
           }
+
+          // Fin du chargement
+          if (status !== "OK")
+            console.log("Erreur chargement itinéraire : " + status);
+          else
+            console.log("Chargement itinéraire OK " + gItineraire.length + " points");
+          lRet = status;
         }
 
-        // Fin du chargement
-        if (status !== "OK")
-          console.log("Erreur chargement itinéraire : " + status);
+        // Aucun point mais ce n'est pas une erreur
         else
-          console.log("Chargement itinéraire OK " + gItineraire.length + " points");
-        lRet = status;
+          lRet = "OK";
       }
-
-      // Aucun point mais ce n'est pas une erreur
       else
-        lRet = "OK";
+        lRet = status;
+
+      pid('panChargement').style.display = 'none';
+
+      // Mémorisation dans le localstorage même si le tableau est vide
+      localStorage.setItem('OlySee_itineraire', JSON.stringify(gItineraire));
+
+      // Si l'itinéraire n'est pas vide, on mémorise sa date
+      let lDate = "";
+      if (gItineraire.length > 0)
+        lDate = gItineraire[0].date;
+      else
+        lDate = DateSupabase();
+
+      localStorage.setItem('OlySee_date_itineraire', lDate);
+      lRet = "OK";
     }
+
+    // Itinéraire à jour, on récupère celui du local storage
     else
-      lRet = status;
-
-    pid('panChargement').style.display = 'none';
-
-    // Mémorisation dans le localstorage même si le tableau est vide
-    localStorage.setItem('OlySee_itineraire', JSON.stringify(gItineraire));
+    {
+      gItineraire = JSON.parse(localStorage.getItem('OlySee_itineraire'));
+      console.log("Itinéraire à jour, on conserve celui du local storage : " + gItineraire.length + " points");
+      lRet = "OK";
+    }
   }
 
   // Pas de connexion
@@ -717,6 +740,35 @@ async function ChargementItineraire()
     lRet = "OK";
   }
   return(lRet);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Vérification si l'itinéraire a été modifié sur la base de données
+//--------------------------------------------------------------------------------------------------
+async function VerifieMAJitineraire()
+{
+  let lDoitEtreRafraichi = false;
+  let lRet;
+  let lCmd;
+
+  // Lecture du dernier point de l'itinéraire
+  lCmd = "user=eq." + USER
+       + "&type=eq.0"
+       + "&order=date.desc"
+       + "&limit=1";
+  lRet = await SupabaseRead(lCmd);
+
+
+  // Si au moins un point, on compare la date avec cette du local storage
+  if (lRet.data.length > 0)
+  {
+    const lDate = lRet.data[0].date;
+    const lDateMemorisee = localStorage.getItem('OlySee_date_itineraire') ?? "0";
+    if (lDate != lDateMemorisee)
+      lDoitEtreRafraichi = true;
+  }
+
+  return (lDoitEtreRafraichi);
 }
 
 //--------------------------------------------------------------------------------------------------
