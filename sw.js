@@ -1,4 +1,4 @@
-const VersionSW = "2611.24d";
+const VersionSW = "2611.24b";
 const CACHE_NAME = 'OlyGo'+ VersionSW;
 const ASSETS = [
   'adrServerSee.js',
@@ -62,8 +62,7 @@ self.addEventListener('install', (event) =>
 {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) =>
-      {
+      .then((cache) => {
         console.log('Installation nouvelle version :', CACHE_NAME);
         return cache.addAll(ASSETS);
       })
@@ -75,39 +74,15 @@ self.addEventListener('install', (event) =>
 // Stratégie : Répondre avec le cache si hors-ligne
 self.addEventListener('fetch', (e) =>
 {
-  const url = event.request.url;
-
-  // Détecter s'il s'agit d'une requête de tuile (ex: OpenStreetMap ou Mapbox)
-  // On vérifie si l'URL contient "tile" ou provient d'un domaine de cartographie
-  const isTileRequest = url.includes('tile.openstreetmap.org') || url.includes('/tiles/');
-
-  event.respondWith(
-    caches.match(event.request, { ignoreSearch: isTileRequest }).then((response) => {
-      // Si la ressource est dans le cache, on la retourne
-      if (response)
+  e.respondWith(
+    caches.match(e.request, { ignoreSearch: true })
+      .then((res) =>
       {
-        console.log("Tile from cache");
-        return response;
-      }
-
-      // Sinon, on va la chercher sur le réseau
-      return fetch(event.request).then((networkResponse) =>
-      {
-        // Si c'est une tuile ou une ressource que l'on veut mettre en cache dynamiquement
-        if (isTileRequest && networkResponse && networkResponse.status === 200)
-        {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) =>
-          {
-            cache.put(event.request, responseToCache);
-            console.log("Tile to cache");
-          });
-        }
-        return networkResponse;
-      });
-    }).catch(() =>
+        return res || fetch(e.request);
+      })
+      .catch(() =>
     {
-      // Optionnel : retourner une image par défaut si hors-ligne et tuile non cachée
+        // console.error("Ressource introuvable et réseau coupé.");
     })
   );
 });
