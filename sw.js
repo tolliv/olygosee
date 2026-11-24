@@ -1,4 +1,4 @@
-const VersionSW = "2611.24c";
+const VersionSW = "2611.24d";
 const CACHE_NAME = 'OlyGo'+ VersionSW;
 const ASSETS = [
   'adrServerSee.js',
@@ -86,6 +86,7 @@ self.addEventListener('fetch', (e) =>
       // Si la ressource est dans le cache, on la retourne
       if (response)
       {
+        console.log("Tile from cache");
         return response;
       }
 
@@ -96,8 +97,10 @@ self.addEventListener('fetch', (e) =>
         if (isTileRequest && networkResponse && networkResponse.status === 200)
         {
           const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
+          caches.open(CACHE_NAME).then((cache) =>
+          {
             cache.put(event.request, responseToCache);
+            console.log("Tile to cache");
           });
         }
         return networkResponse;
