@@ -287,13 +287,20 @@ async function ButTesterIDClick()
       break;
     }
 
-    const lRetDecode = await decodeSupabaseConfig(ID);
 
     // L'ID est incorrect
+    const lRetDecode = await decodeSupabaseConfig(ID);
     if (lRetDecode.url == "")
     {
       await sleep(300);
       pid('txtResultatTestID').innerHTML = "Erreur ID non valide";
+      break;
+    }
+
+    if (lRetDecode.admin == true)
+    {
+      await sleep(300);
+      pid('txtResultatTestID').innerHTML = "Erreur, c'est un ID Admin";
       break;
     }
 

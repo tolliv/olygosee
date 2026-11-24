@@ -1,4 +1,4 @@
-const VersionSW = "2611.24a";
+const VersionSW = "2611.24b";
 const CACHE_NAME = 'OlyGo'+ VersionSW;
 const ASSETS = [
   'adrServerSee.js',
