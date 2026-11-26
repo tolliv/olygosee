@@ -1,4 +1,4 @@
-const VersionSW = "2611.26d";
+const VersionSW = "2611.26e";
 const APP_CACHE_NAME = "OlyGoApp"+ VersionSW;
 const TILE_CACHE_NAME = "OlyGoTiles";
 const ASSETS = [
@@ -95,14 +95,21 @@ self.addEventListener('install', (event) =>
 //--------------------------------------------------------------------------------------------------
 self.addEventListener('fetch', (event) =>
 {
+  const url = new URL(event.request.url);
+
   // Les requêtes supabase ne sont pas gérées par le SW
-  if (url.hostname.includes('subapase.co'))
+  if (url.hostname.includes('supabase.co'))
   {
     return;
   }
 
-  const url = event.request.url;
-  const isTileRequest = url.includes('tile.openstreetmap.org') || url.includes('/tiles/');
+  // Ne pas mettre en cache les requêtes non-GET (Supabase utilise souvent POST/PATCH)
+  if (event.request.method !== 'GET')
+  {
+    return;
+  }
+
+  const isTileRequest = url.hostname.includes('tile.openstreetmap.org') || url.pathname.includes('/tiles/');
 
   event.respondWith(
     caches.match(event.request, { ignoreSearch: isTileRequest }).then((response) =>
@@ -126,6 +133,7 @@ self.addEventListener('fetch', (event) =>
           {
             cache.put(event.request, responseToCache);
             // console.log("Put cache ", event.request.url);
+
             // Limiter la taille du cache des tuiles uniquement
             if (isTileRequest)
             {
