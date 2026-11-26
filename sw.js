@@ -1,4 +1,4 @@
-const VersionSW = "2611.24b";
+const VersionSW = "2611.26d";
 const APP_CACHE_NAME = "OlyGoApp"+ VersionSW;
 const TILE_CACHE_NAME = "OlyGoTiles";
 const ASSETS = [
@@ -95,6 +95,12 @@ self.addEventListener('install', (event) =>
 //--------------------------------------------------------------------------------------------------
 self.addEventListener('fetch', (event) =>
 {
+  // Les requêtes supabase ne sont pas gérées par le SW
+  if (url.hostname.includes('subapase.co'))
+  {
+    return;
+  }
+
   const url = event.request.url;
   const isTileRequest = url.includes('tile.openstreetmap.org') || url.includes('/tiles/');
 

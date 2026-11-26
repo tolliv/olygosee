@@ -5,13 +5,21 @@
 //-------------------------------------------------------
 // Afficher l'écran scrParam
 //-------------------------------------------------------
-function AfficherEcranPARAM()
+async function AfficherEcranPARAM()
 {
   // Affichage
-  let lConnecte = IsConnected();
+  const lConnecte = IsConnected();
+  const lIsPersistant = await navigator.storage.persisted();
+  let lPersisted = "";
+  if (lIsPersistant)
+    lPersisted = "Persistance active";
+  else
+    lPersisted = "Persistance inactive";
+
   pid('TxtReseau').innerHTML = "Accès réseau : <b>" + (lConnecte?"Oui":"Non") + "</b>";
   pid('txtResultatTestID').innerHTML = "";
   pid('txtResultatCopierLien').innerHTML = "";
+  pid('TxtMemoryUsed').innerHTML = "Mémoire utilisée : <b>" + ReadStorage() + "</b> " + lPersisted;
   pid('scrParam').style.display = 'block';
 }
 
@@ -287,7 +295,6 @@ async function ButTesterIDClick()
       break;
     }
 
-
     // L'ID est incorrect
     const lRetDecode = await decodeSupabaseConfig(ID);
     if (lRetDecode.url == "")
@@ -411,4 +418,42 @@ async function ButTesterGeolocClick()
     if (gGeoStatus == -3)   pid('txtResultatTestGeoloc').innerHTML = "Précision non atteinte";
   }
   BoutonEtat('ButTesterGeoloc', 'inactif');
+}
+
+
+//--------------------------------------------------------------------------------------------------
+// Lit la place restante
+//--------------------------------------------------------------------------------------------------
+function ReadStorage()
+{
+  let used = 0;
+  let quota = 0;
+  if (navigator.storage && navigator.storage.estimate)
+  {
+    navigator.storage.estimate().then(estimate =>
+    {
+      used = (estimate.usage / (1024 * 1024)).toFixed(2);
+      quota = (estimate.quota / (1024 * 1024)).toFixed(2);
+    });
+  }
+  return (used + " / " + quota + " Mo");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Demande la persistance des données
+//--------------------------------------------------------------------------------------------------
+async function CheckAndRequestPersistance()
+{
+  console.log("Persistance demandée");
+  if (navigator.storage && navigator.storage.persist)
+  {
+    const isAlreadyPersisted = await navigator.storage.persisted();
+
+    // Non, alors demande la persistance
+    if (!isAlreadyPersisted)
+    {
+      const granted = await navigator.storage.persist();
+      console.log("Persistance accordée : " + granted);
+    }
+  }
 }
