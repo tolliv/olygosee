@@ -58,13 +58,13 @@ const ASSETS = [
 ];
 
 // Installation : Mise en cache des fichiers si changement du sw.js
-self.addEventListener('install', (event) =>
-{
+self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => {
+      .then((cache) =>
+      {
         console.log('Installation nouvelle version :', CACHE_NAME);
-        return cache.addAll(ASSETS);
+        cache.addAll(ASSETS);
       })
   );
   self.skipWaiting();
@@ -72,17 +72,40 @@ self.addEventListener('install', (event) =>
 
 
 // Stratégie : Répondre avec le cache si hors-ligne
-self.addEventListener('fetch', (e) =>
+self.addEventListener('fetch', (event) =>
 {
-  e.respondWith(
-    caches.match(e.request, { ignoreSearch: true })
-      .then((res) =>
-      {
-        return res || fetch(e.request);
-      })
-      .catch(() =>
+  const url = event.request.url;
+  const isTileRequest = url.includes('tile.openstreetmap.org') || url.includes('/tiles/');
+
+  event.respondWith(
+    caches.match(event.request, { ignoreSearch: isTileRequest }).then((response) =>
     {
-        // console.error("Ressource introuvable et réseau coupé.");
+      // Si la ressource est dans le cache, on la retourne
+      if (response)
+      {
+        if (isTileRequest)
+          console.log("Get cache ", event.request.url);
+        return (response);
+      }
+
+      // Sinon, on va la chercher sur le réseau
+      return fetch(event.request).then((networkResponse) =>
+      {
+        // Si c'est une tuile ou une ressource que l'on veut mettre en cache dynamiquement
+        if (isTileRequest && networkResponse && (networkResponse.status === 200 || networkResponse.status === 0))
+        {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) =>
+          {
+            console.log("Put cache ", event.request.url);
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return (networkResponse);
+      });
+    }).catch(() =>
+    {
+      // Optionnel : retourner une image par défaut si hors-ligne et tuile non cachée
     })
   );
 });
