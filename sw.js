@@ -1,5 +1,6 @@
 const VersionSW = "2611.24b";
-const CACHE_NAME = 'OlyGo'+ VersionSW;
+const APP_CACHE_NAME = "OlyGoApp"+ VersionSW;
+const TILE_CACHE_NAME = "OlyGoTiles";
 const ASSETS = [
   'adrServerSee.js',
   'aide.css',
@@ -57,21 +58,41 @@ const ASSETS = [
   'version.js',
 ];
 
+//--------------------------------------------------------------------------------------------------
+// Fonction de limite de taille du cache TILE_CACHE_NAME
+//--------------------------------------------------------------------------------------------------
+async function limitCacheSize(cacheName, maxItems)
+{
+  const cache = await caches.open(cacheName);
+  const keys = await cache.keys();
+  if (keys.length > maxItems)
+  {
+    // Supprime la plus ancienne (la première de la liste)
+    await cache.delete(keys[0]);
+    // Récursivité pour s'assurer qu'on repasse sous la limite
+    limitCacheSize(cacheName, maxItems);
+  }
+}
+
+//--------------------------------------------------------------------------------------------------
 // Installation : Mise en cache des fichiers si changement du sw.js
-self.addEventListener('install', (event) => {
+//--------------------------------------------------------------------------------------------------
+self.addEventListener('install', (event) =>
+{
   event.waitUntil(
-    caches.open(CACHE_NAME)
+    caches.open(APP_CACHE_NAME)
       .then((cache) =>
       {
-        console.log('Installation nouvelle version :', CACHE_NAME);
+        console.log('Installation nouvelle version :', APP_CACHE_NAME);
         cache.addAll(ASSETS);
       })
   );
   self.skipWaiting();
 });
 
-
+//--------------------------------------------------------------------------------------------------
 // Stratégie : Répondre avec le cache si hors-ligne
+//--------------------------------------------------------------------------------------------------
 self.addEventListener('fetch', (event) =>
 {
   const url = event.request.url;
@@ -82,47 +103,51 @@ self.addEventListener('fetch', (event) =>
     {
       // Si la ressource est dans le cache, on la retourne
       if (response)
-      {
-        if (isTileRequest)
-        {
-          // console.log("Get cache ", event.request.url);
-        }
         return (response);
-      }
 
       // Sinon, on va la chercher sur le réseau
       return fetch(event.request).then((networkResponse) =>
       {
         // Si c'est une tuile ou une ressource que l'on veut mettre en cache dynamiquement
-        if (isTileRequest && networkResponse && (networkResponse.status === 200 || networkResponse.status === 0))
+        if (networkResponse && (networkResponse.status === 200 || networkResponse.status === 0))
         {
           const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) =>
+
+          // On choisit le cache de destination
+          const targetCache = isTileRequest ? TILE_CACHE_NAME : APP_CACHE_NAME;
+
+          caches.open(targetCache).then((cache) =>
           {
-            // console.log("Put cache ", event.request.url);
             cache.put(event.request, responseToCache);
+            // console.log("Put cache ", event.request.url);
+            // Limiter la taille du cache des tuiles uniquement
+            if (isTileRequest)
+            {
+               limitCacheSize(TILE_CACHE_NAME, 1000);
+            }
           });
         }
         return (networkResponse);
       });
     }).catch(() =>
     {
-      // Optionnel : retourner une image par défaut si hors-ligne et tuile non cachée
+      // Retourner une image par défaut si hors-ligne et tuile non cachée
     })
   );
 });
 
-
+//--------------------------------------------------------------------------------------------------
 // Activation nouveau Service Worker : nettoyage des anciens caches
+//--------------------------------------------------------------------------------------------------
 self.addEventListener('activate', (event) =>
 {
   event.waitUntil(
     caches.keys().then((cacheNames) =>
     {
       return Promise.all([
-        ...cacheNames.map((cacheName) =>
+        cacheNames.map((cacheName) =>
         {
-          if (cacheName !== CACHE_NAME)
+          if (cacheName.startsWith("OlygoApp") && (cacheName !== APP_CACHE_NAME))
           {
             console.log('Suppression ancien cache :', cacheName);
             return caches.delete(cacheName);

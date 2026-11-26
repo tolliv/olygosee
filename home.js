@@ -169,8 +169,9 @@ function butChoixClicked(choix)
 //--------------------------------------------------------------------------------------------------
 // Boutons du menu
 //--------------------------------------------------------------------------------------------------
-function ButMenuParamClicked()
+async function ButMenuParamClicked()
 {
+  await CheckAndRequestPersistance();
   pid('scrHome').style.display = 'none';
   AfficherEcranPARAM();
 }

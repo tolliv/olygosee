@@ -1,4 +1,4 @@
-// 2611.26b
+// 2611.26c
 //==================================================================================================
 // OlySee : fichier principal
 //==================================================================================================
@@ -1912,6 +1912,41 @@ async function ButAdminTstAddPoint()
         // 1 point à la fois
         break;
       }
+    }
+  }
+}
+
+//--------------------------------------------------------------------------------------------------
+// Lit la place restante
+//--------------------------------------------------------------------------------------------------
+function ButAdminReadStorage()
+{
+  if (navigator.storage && navigator.storage.estimate)
+  {
+    navigator.storage.estimate().then(estimate =>
+    {
+      const used = (estimate.usage / (1024 * 1024)).toFixed(2);
+      const quota = (estimate.quota / (1024 * 1024)).toFixed(2);
+      console.log(`Utilisé : ${used} Mo sur un quota de ${quota} Mo`);
+    });
+  }
+}
+
+//--------------------------------------------------------------------------------------------------
+// Demande la persistance des données
+//--------------------------------------------------------------------------------------------------
+async function CheckAndRequestPersistance()
+{
+  console.log("Persistance demandée");
+  if (navigator.storage && navigator.storage.persist)
+  {
+    const isAlreadyPersisted = await navigator.storage.persisted();
+
+    // Non, alors demande la persistance
+    if (!isAlreadyPersisted)
+    {
+      const granted = await navigator.storage.persist();
+      console.log("Persistance accordée : " + granted);
     }
   }
 }
