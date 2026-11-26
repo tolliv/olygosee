@@ -1,7 +1,8 @@
-// 2611.26a
+// 2611.26b
 //==================================================================================================
 // Gestion de la carte
 //==================================================================================================
+const MAX_ZOOM = 16;
 
 var map;
 var IconeDebut;
@@ -111,8 +112,10 @@ function createStaticIcons()
 //--------------------------------------------------------------------------------------------------
 function AfficheCarte()
 {
-  // Affichage de la carte
-  map = L.map('map').setView(gCurrentCenter, gCurrentZoom);
+  map = L.map('map',
+  {
+      maxZoom: MAX_ZOOM
+  }).setView(gCurrentCenter, gCurrentZoom);
   SelectionnerFond('osm');
 }
 
@@ -337,24 +340,35 @@ function AffichePositions()
   }
 }
 
-
 //--------------------------------------------------------------------------------------------------
 // Définition des différents fonds de carte
 //--------------------------------------------------------------------------------------------------
-// Par défaut
+
 const fondsDeCarte =
 {
-    'osm': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '©OpenStreetMap contributors'}),
+    'osm': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {
+        attribution: '©OpenStreetMap contributors',
+        maxZoom: MAX_ZOOM
+    }),
 
-    'topo': L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenTopMap contributors'}),
+    'topo': L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+    {
+        attribution: '© OpenTopMap contributors',
+        maxZoom: MAX_ZOOM
+    }),
 
-    'ignPlan': L.tileLayer('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&STYLE=normal&FORMAT=image/png&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}', {
-        attribution: '© IGN contributors'}),
+    'ignPlan': L.tileLayer('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&STYLE=normal&FORMAT=image/png&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',
+    {
+        attribution: '© IGN contributors',
+        maxZoom: MAX_ZOOM
+    }),
 
-    'satellite': L.tileLayer('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&STYLE=normal&FORMAT=image/jpeg&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}', {
-        attribution: '© IGN contributors'})
+    'satellite': L.tileLayer('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&STYLE=normal&FORMAT=image/jpeg&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',
+    {
+        attribution: '© IGN contributors',
+        maxZoom: MAX_ZOOM
+    })
 };
 var coucheActuelle = fondsDeCarte['osm'];
 

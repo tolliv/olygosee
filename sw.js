@@ -84,7 +84,9 @@ self.addEventListener('fetch', (event) =>
       if (response)
       {
         if (isTileRequest)
-          console.log("Get cache ", event.request.url);
+        {
+          // console.log("Get cache ", event.request.url);
+        }
         return (response);
       }
 
@@ -97,7 +99,7 @@ self.addEventListener('fetch', (event) =>
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) =>
           {
-            console.log("Put cache ", event.request.url);
+            // console.log("Put cache ", event.request.url);
             cache.put(event.request, responseToCache);
           });
         }
